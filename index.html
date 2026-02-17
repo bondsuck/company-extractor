@@ -3,175 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Data Extractor (Smart PDF Version)</title>
+    <title>Company Data Extractor (Address Splitter)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style> body { font-family: 'Sarabun', sans-serif; } </style>
 </head>
-<body class="bg-gray-100 p-10">
+<body class="bg-gray-100 p-6">
 
-    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="bg-indigo-600 p-5 text-white">
-            <h1 class="text-2xl font-bold">ระบบดึงข้อมูลบริษัท (รองรับ PDF Copy)</h1>
-            <p class="text-sm opacity-80">ฉลาดขึ้น! รองรับการ Copy จากฟอร์มที่มีภาษาไทยปน</p>
+    <div class="max-w-5xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
+        <div class="bg-indigo-700 p-6 text-white shadow-inner">
+            <h1 class="text-2xl font-bold">ระบบดึงข้อมูลบริษัท (แบบแยกช่องที่อยู่)</h1>
+            <p class="text-sm opacity-90">แยก ถนน / แขวง / เขต / จังหวัด ให้อัตโนมัติ</p>
         </div>
 
-        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             <div class="space-y-4">
-                <h2 class="text-lg font-semibold text-gray-700">1. วางข้อมูลดิบ (Input)</h2>
-                <div class="bg-yellow-50 p-4 rounded-md border-2 border-yellow-200">
-                    <textarea id="rawInput" rows="12" class="w-full p-2 border rounded bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm" placeholder="วางข้อความที่นี่..."></textarea>
-                    <button onclick="processData()" class="mt-3 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded transition">
-                        ⚡ ดึงข้อมูลทันที
-                    </button>
-                    <button onclick="clearAll()" class="mt-2 w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-4 rounded text-sm transition">
-                        ล้างข้อมูล
-                    </button>
+                <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 shadow-sm">
+                    <label class="block text-gray-800 text-sm font-bold mb-2">1. วางข้อมูลดิบที่นี่ (Paste Raw Data):</label>
+                    <textarea id="rawInput" rows="15" class="w-full p-3 border border-yellow-300 rounded bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm leading-relaxed" placeholder="ตัวอย่าง:
+Ritta Co., Ltd. ชื่อบริษัท
+300 Romklao Road ที่อยู่
+Latkrabang อำเภอเมือง
+Bangkok จังหวัด
+10520 รหัสไปรษณีย์..."></textarea>
+                    
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="processData()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition shadow">
+                            ⚡ แยกข้อมูล (Extract)
+                        </button>
+                        <button onclick="clearAll()" class="w-24 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded transition">
+                            ล้าง
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <h2 class="text-lg font-semibold text-gray-700">2. ผลลัพธ์ (Output)</h2>
-                <div class="bg-green-50 p-6 rounded-md border-2 border-green-200 space-y-3">
-                    
+                <div class="bg-green-50 p-6 rounded-lg border-2 border-green-300 shadow-sm space-y-3">
+                    <h2 class="text-gray-800 font-bold border-b border-green-200 pb-2 mb-4">2. ตรวจสอบข้อมูล (Verified Data)</h2>
+
                     <div>
-                        <label class="text-xs font-bold text-gray-500">ชื่อบริษัท</label>
-                        <input type="text" id="companyName" class="w-full p-2 border rounded bg-green-100 font-semibold text-indigo-900">
+                        <label class="text-xs font-bold text-indigo-700 uppercase">Company Name</label>
+                        <input type="text" id="companyName" class="w-full p-2 border border-green-300 rounded bg-white font-semibold text-gray-800 focus:ring-2 focus:ring-green-400">
                     </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">ที่อยู่ (รวมหลายบรรทัด)</label>
-                        <textarea id="address" rows="4" class="w-full p-2 border rounded bg-green-100"></textarea>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">เลขผู้เสียภาษี</label>
-                        <input type="text" id="taxId" class="w-full p-2 border rounded bg-green-100">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
+
+                    <div class="bg-green-100 p-3 rounded border border-green-200 space-y-2">
+                        <p class="text-xs font-bold text-gray-500 mb-1">--- ข้อมูลที่อยู่ (Address Details) ---</p>
+                        
                         <div>
-                            <label class="text-xs font-bold text-gray-500">เบอร์โทร</label>
-                            <input type="text" id="phone" class="w-full p-2 border rounded bg-green-100">
+                            <label class="text-[10px] text-gray-500">เลขที่ / อาคาร / ถนน (Address/Street)</label>
+                            <input type="text" id="addr_street" class="w-full p-1.5 border border-green-300 rounded bg-white text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] text-gray-500">แขวง / ตำบล (Sub-district)</label>
+                                <input type="text" id="addr_subdistrict" class="w-full p-1.5 border border-green-300 rounded bg-white text-sm">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500">เขต / อำเภอ (District)</label>
+                                <input type="text" id="addr_district" class="w-full p-1.5 border border-green-300 rounded bg-white text-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] text-gray-500">จังหวัด (Province)</label>
+                                <input type="text" id="addr_province" class="w-full p-1.5 border border-green-300 rounded bg-white text-sm">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500">รหัสไปรษณีย์ (Zip Code)</label>
+                                <input type="text" id="addr_zip" class="w-full p-1.5 border border-green-300 rounded bg-white text-sm text-center font-bold tracking-widest text-indigo-800">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">Tax ID</label>
+                            <input type="text" id="taxId" class="w-full p-2 border border-green-300 rounded bg-white text-sm">
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-gray-500">อีเมล</label>
-                            <input type="text" id="email" class="w-full p-2 border rounded bg-green-100">
+                            <label class="text-xs font-bold text-gray-500">Phone</label>
+                            <input type="text" id="phone" class="w-full p-2 border border-green-300 rounded bg-white text-sm">
                         </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">Email</label>
+                        <input type="text" id="email" class="w-full p-2 border border-green-300 rounded bg-white text-sm">
                     </div>
 
                     <hr class="border-green-300 my-2">
                     
-                    <button onclick="saveToSheet()" id="btnSave" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded shadow flex justify-center items-center gap-2 transition">
-                        <span>💾 บันทึกลง Google Sheet</span>
+                    <button onclick="saveToSheet()" id="btnSave" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded shadow-lg flex justify-center items-center gap-2 transition transform active:scale-95">
+                        <span>💾 บันทึกข้อมูล (Save)</span>
                     </button>
-                    <p id="statusMsg" class="text-center text-sm mt-1 text-gray-500"></p>
+                    <p id="statusMsg" class="text-center text-xs mt-2 h-4 font-semibold"></p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // *** วาง URL ของ Google Apps Script ที่นี่ ***
+        // *** วาง URL Google Apps Script ของคุณที่นี่ ***
         const GOOGLE_SCRIPT_URL = 'วาง_URL_จาก_GOOGLE_APPS_SCRIPT_ที่นี่';
 
         function clearAll() {
             document.getElementById('rawInput').value = '';
-            resetFields();
+            ['companyName', 'addr_street', 'addr_subdistrict', 'addr_district', 'addr_province', 'addr_zip', 'taxId', 'phone', 'email'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('statusMsg').innerText = '';
         }
 
-        function resetFields() {
-            ['companyName', 'address', 'taxId', 'phone', 'email'].forEach(id => document.getElementById(id).value = '');
-        }
-
-        // ฟังก์ชันทำความสะอาดข้อความ (ลบคำต่อท้ายขยะจาก PDF)
-        function cleanLine(text) {
-            // ลบคำว่า "ชื่อบริษัท", "ที่อยู่", "เบอร์โทรศัพท์" ที่มักติดมาท้ายประโยค
-            return text
-                .replace(/(ชื่อบริษัท|Company Name|Head Office|สำนักงานใหญ่|ที่อยู่|Address|รหัสไปรษณีย์|Postal Code|จังหวัด|Province|อำเภอเมือง|City|เบอร์โทรศัพท์|Phone|อีเมลล์ผู้ใช้งาน|Email|อีเมล).*$/i, '')
-                .trim();
+        function cleanSuffix(text) {
+            // ลบคำต่อท้ายภาษาไทยที่ติดมาจาก PDF
+            return text.replace(/(ชื่อบริษัท|ที่อยู่|อำเภอเมือง|อำเภอ|เขต|แขวง|ตำบล|จังหวัด|รหัสไปรษณีย์|เบอร์โทรศัพท์|อีเมลล์ผู้ใช้งาน|อีเมล).*$/i, '').trim();
         }
 
         function processData() {
             const rawText = document.getElementById('rawInput').value;
-            resetFields();
+            
+            // ล้างค่าเก่า
+            ['companyName', 'addr_street', 'addr_subdistrict', 'addr_district', 'addr_province', 'addr_zip', 'taxId', 'phone', 'email'].forEach(id => document.getElementById(id).value = '');
 
             const lines = rawText.split('\n').map(l => l.trim()).filter(l => l !== '');
-            let addressParts = [];
-            let companyFound = false;
 
-            // วนลูปทีละบรรทัด
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i];
-                let cleanedLine = cleanLine(line); // ตัดคำขยะออกก่อนวิเคราะห์
+            lines.forEach(line => {
+                const lowerLine = line.toLowerCase();
+                const cleaned = cleanSuffix(line);
 
-                // 1. หา Email
-                const emailMatch = line.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
-                if (emailMatch && !document.getElementById('email').value) {
-                    document.getElementById('email').value = emailMatch[0];
-                    continue; // เจอแล้วข้ามไปบรรทัดต่อไป
-                }
-
-                // 2. หาเบอร์โทร
-                const phoneMatch = line.match(/(0\d{1,2}[-\s]?\d{3,4}[-\s]?\d{3,4})/);
-                if (phoneMatch && !document.getElementById('phone').value) {
-                    document.getElementById('phone').value = phoneMatch[0];
-                    continue;
-                }
-
-                // 3. หาเลขผู้เสียภาษี (13 หลัก)
-                const taxMatch = line.match(/\b\d{13}\b/);
-                if (taxMatch && !document.getElementById('taxId').value) {
-                    document.getElementById('taxId').value = taxMatch[0];
-                    continue;
-                }
-
-                // 4. หาชื่อบริษัท (Priority: ต้องมีคำว่า Co., Ltd, Company, บริษัท)
-                const isCompany = /(Co\.,|Ltd\.|Limited|Company|Corp\.|Inc\.|บริษัท|หจก\.|บมจ\.)/i.test(line);
-                if (isCompany && !companyFound) {
-                    // ถ้าเจอคำว่าบริษัท ให้ใช้ cleanedLine (ตัดคำว่า "ชื่อบริษัท" ทิ้ง)
-                    document.getElementById('companyName').value = cleanedLine.replace(/[\(\)]/g, '').trim(); // ลบวงเล็บส่วนเกิน
-                    companyFound = true;
-                    continue;
-                }
-
-                // 5. หาที่อยู่ (สะสมบรรทัดที่เหลือที่ดูเหมือนที่อยู่)
-                // เงื่อนไข: มีตัวเลข (บ้านเลขที่/รหัสปณ.) หรือมีคำว่า Road, Soi, Bangkok, แขวง, เขต
-                const isAddressKeyword = /(Road|Rd\.|Soi|Moo|Bangkok|Bkk|Province|District|Sub-district|Khet|Khwaeng|ถนน|ซอย|หมู่|แขวง|เขต|จ\.|จังหวัด|กทม|ต\.|อ\.|รหัสไปรษณีย์)/i.test(line);
-                const isPostalCode = /\b\d{5}\b/.test(line); // รหัสไปรษณีย์ 5 หลัก
-                
-                // ถ้าเป็นบรรทัดที่มี Address Keyword หรือเป็นรหัสไปรษณีย์ หรือเป็นภาษาอังกฤษล้วนที่ไม่มี @ (น่าจะเป็นชื่อเมือง/ถนน)
-                if (isAddressKeyword || isPostalCode || (cleanedLine.match(/^[A-Za-z0-9\s,\.\/-]+$/) && cleanedLine.length > 5 && !line.includes('@'))) {
-                    // กรองคำว่า "End Customer..." ทิ้ง
-                    if (!line.toLowerCase().startsWith('end customer') && !line.toLowerCase().startsWith('end user')) {
-                        addressParts.push(cleanedLine);
+                // --- 1. ชื่อบริษัท ---
+                // เช็คจากคำลงท้าย "ชื่อบริษัท" หรือคำว่า Co., Ltd.
+                if (line.match(/ชื่อบริษัท$/) || (/(Co\.,|Ltd\.|Limited|Company|บริษัท)/i.test(line) && !lowerLine.includes('end customer'))) {
+                    // ถ้ายังไม่มีชื่อบริษัท ให้ใส่เลย
+                    if (!document.getElementById('companyName').value) {
+                        document.getElementById('companyName').value = cleaned.replace(/[\(\)]/g, '').trim();
                     }
                 }
-            }
 
-            // ถ้าหาบริษัทไม่เจอจริงๆ ให้เอาบรรทัดแรกที่ยาวๆ หน่อยเป็นชื่อบริษัท (Fallback)
-            if (!companyFound && lines.length > 0) {
-                 // แต่ต้องไม่ใช่คำว่า End User...
-                 const validLines = lines.filter(l => !l.toLowerCase().startsWith('end'));
-                 if (validLines.length > 0) document.getElementById('companyName').value = cleanLine(validLines[0]);
-            }
+                // --- 2. อีเมล ---
+                const emailMatch = line.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
+                if (emailMatch) document.getElementById('email').value = emailMatch[0];
 
-            // รวมที่อยู่แล้วใส่ลงช่อง
-            if (addressParts.length > 0) {
-                document.getElementById('address').value = addressParts.join(' '); // เว้นวรรคต่อกัน
-            }
+                // --- 3. เบอร์โทร ---
+                const phoneMatch = line.match(/(0\d{1,2}[-\s]?\d{3,4}[-\s]?\d{3,4})/);
+                if (phoneMatch) document.getElementById('phone').value = phoneMatch[0];
+
+                // --- 4. Tax ID ---
+                const taxMatch = line.match(/\b\d{13}\b/);
+                if (taxMatch) document.getElementById('taxId').value = taxMatch[0];
+
+                // --- 5. ที่อยู่ (แยกช่อง) ---
+                
+                // 5.1 จังหวัด (Province) -> ดูคำลงท้าย "จังหวัด" หรือคำว่า Bangkok
+                if (line.match(/จังหวัด$/) || lowerLine.includes('bangkok') || lowerLine.includes('province')) {
+                     // ถ้าบรรทัดนี้ไม่ใช่ที่อยู่ยาวๆ (คือเป็นแค่ชื่อจังหวัด)
+                     if (cleaned.length < 20) {
+                        document.getElementById('addr_province').value = cleaned;
+                        return; // จบ
+                     }
+                }
+
+                // 5.2 รหัสไปรษณีย์ (Zip) -> ดูคำลงท้าย "รหัสไปรษณีย์" หรือตัวเลข 5 หลักโดดๆ
+                if (line.match(/รหัสไปรษณีย์$/) || /^\d{5}$/.test(cleaned)) {
+                    const zipMatch = line.match(/\d{5}/);
+                    if (zipMatch) document.getElementById('addr_zip').value = zipMatch[0];
+                    return;
+                }
+
+                // 5.3 เขต/อำเภอ (District) -> ดูคำลงท้าย "อำเภอเมือง", "อำเภอ", "เขต"
+                if (line.match(/(อำเภอเมือง|อำเภอ|เขต)$/) || lowerLine.includes('district') || lowerLine.includes('khet')) {
+                    // ระวัง: บางที "อำเภอเมือง" ใน PDF มันต่อท้าย Latkrabang (ซึ่งเป็นเขต)
+                    document.getElementById('addr_district').value = cleaned;
+                    return;
+                }
+
+                // 5.4 แขวง/ตำบล (Sub-district) -> ดูคำว่า "แขวง", "ตำบล"
+                if (line.match(/(แขวง|ตำบล)$/) || lowerLine.includes('sub-district') || lowerLine.includes('khwaeng') || lowerLine.includes('tambon')) {
+                    document.getElementById('addr_subdistrict').value = cleaned;
+                    return;
+                }
+
+                // 5.5 ถนน/เลขที่ (Street/Address) -> ดูคำลงท้าย "ที่อยู่" หรือคำว่า Road
+                if (line.match(/ที่อยู่$/) || lowerLine.includes('road') || lowerLine.includes('soi') || lowerLine.includes('moo')) {
+                    document.getElementById('addr_street').value = cleaned;
+                    return;
+                }
+            });
+            
+            // Fallback: ถ้ายังไม่มีข้อมูลที่อยู่ ลองเดาจากบรรทัดที่เหลือ
+            // (ส่วนนี้อาจจะซับซ้อนเกินไปสำหรับ Regex ธรรมดา แต่ทิ้งไว้ให้ผู้ใช้กรอกเองได้ถ้าไม่เจอ)
         }
 
         function saveToSheet() {
             if(GOOGLE_SCRIPT_URL.includes('วาง_URL') || GOOGLE_SCRIPT_URL === '') {
-                alert('⚠️ กรุณาใส่ URL ของ Google Apps Script ในโค้ดก่อนครับ');
+                alert('⚠️ กรุณาใส่ URL Google Apps Script ก่อนครับ');
                 return;
             }
 
             const btn = document.getElementById('btnSave');
             const status = document.getElementById('statusMsg');
             
+            // รวมที่อยู่กลับเป็นก้อนเดียวเพื่อส่งเข้า Google Sheet (ตาม Format เดิม)
+            // หรือคุณจะแก้ Google Script ให้รับแยกก็ได้ แต่วิธีนี้ง่ายสุดไม่ต้องแก้ Sheet
+            const fullAddress = [
+                document.getElementById('addr_street').value,
+                document.getElementById('addr_subdistrict').value,
+                document.getElementById('addr_district').value,
+                document.getElementById('addr_province').value,
+                document.getElementById('addr_zip').value
+            ].filter(Boolean).join(' '); // เอามาต่อกันแล้วคั่นด้วยช่องว่าง
+
             const data = {
                 company: document.getElementById('companyName').value,
-                address: document.getElementById('address').value,
+                address: fullAddress, // ส่งไปเป็นก้อนเดียว
                 taxId: document.getElementById('taxId').value,
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value
@@ -188,25 +233,24 @@
                 body: JSON.stringify(data)
             })
             .then(() => {
-                btn.innerHTML = '✅ บันทึกสำเร็จ!';
-                btn.classList.replace('bg-green-600', 'bg-blue-600');
-                status.innerText = 'บันทึกเรียบร้อย';
-                status.classList.remove('text-red-500');
-                status.classList.add('text-green-600');
+                btn.innerHTML = '✅ เรียบร้อย!';
+                btn.classList.replace('bg-green-600', 'bg-indigo-600');
+                status.innerText = 'ข้อมูลถูกส่งเข้า Google Sheets แล้ว';
+                status.className = 'text-center text-xs mt-2 h-4 font-semibold text-green-600';
                 
                 setTimeout(() => {
-                    btn.innerHTML = '💾 บันทึกลง Google Sheet';
+                    btn.innerHTML = '💾 บันทึกข้อมูล (Save)';
                     btn.disabled = false;
                     btn.classList.remove('opacity-50');
-                    btn.classList.replace('bg-blue-600', 'bg-green-600');
+                    btn.classList.replace('bg-indigo-600', 'bg-green-600');
                     status.innerText = '';
                 }, 3000);
             })
             .catch(error => {
                 console.error('Error:', error);
                 btn.innerHTML = '❌ ผิดพลาด';
-                status.innerText = 'บันทึกไม่สำเร็จ เช็คเน็ต/URL';
-                status.classList.add('text-red-500');
+                status.innerText = 'ส่งข้อมูลไม่สำเร็จ';
+                status.className = 'text-center text-xs mt-2 h-4 font-semibold text-red-500';
                 btn.disabled = false;
             });
         }
