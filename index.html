@@ -3,165 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Data Pro (Hybrid)</title>
+    <title>Company Data Pro (Direct Fetch)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style> body { font-family: 'Sarabun', sans-serif; } </style>
 </head>
-<body class="bg-slate-100 p-4 md:p-8">
+<body class="bg-gray-100 p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden">
-        
-        <div class="bg-gradient-to-r from-blue-900 to-indigo-800 p-6 text-white flex justify-between items-center shadow-lg">
+    <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
+        <div class="bg-indigo-900 p-6 text-white flex justify-between items-center shadow-lg">
             <div>
-                <h1 class="text-2xl font-bold flex items-center gap-2">
-                    <i class="fas fa-building"></i> ระบบดึงข้อมูลนิติบุคคล
-                </h1>
-                <p class="text-sm opacity-80 pl-8">รองรับ PDF Copy + ค้นหาฐานข้อมูลภาครัฐ (DBD)</p>
-            </div>
-            <div class="text-right">
-                <div class="text-xs bg-white/20 px-3 py-1 rounded-full">
-                    <i class="fas fa-wifi"></i> API Ready
-                </div>
+                <h1 class="text-2xl font-bold"><i class="fas fa-building"></i> ระบบดึงข้อมูลนิติบุคคล</h1>
+                <p class="text-sm opacity-80 pl-8">Direct API Connection (Bypassing Server Block)</p>
             </div>
         </div>
 
         <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
             <div class="space-y-4">
-                <div class="bg-yellow-50 p-5 rounded-xl border-2 border-yellow-200 shadow-sm relative group">
-                    <div class="absolute -top-3 left-4 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded shadow">
-                        STEP 1: วางข้อมูลดิบ
-                    </div>
-                    
-                    <textarea id="rawInput" rows="15" 
-                        class="w-full p-4 border border-yellow-300 rounded-lg bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm leading-relaxed transition-all placeholder-gray-400" 
-                        placeholder="ตัวอย่างการวางข้อมูล:
-Ritta Co., Ltd. ชื่อบริษัท
-300 Romklao Road ที่อยู่
-Latkrabang อำเภอเมือง
-Bangkok จังหวัด
-10520 รหัสไปรษณีย์..."></textarea>
-                    
+                <div class="bg-yellow-50 p-5 rounded-xl border border-yellow-200 shadow-sm">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">1. วางข้อมูลจาก PDF:</label>
+                    <textarea id="rawInput" rows="15" class="w-full p-4 border border-yellow-300 rounded-lg bg-yellow-50 focus:ring-2 focus:ring-yellow-500 text-sm leading-relaxed" placeholder="วางข้อความ..."></textarea>
                     <div class="flex gap-3 mt-4">
-                        <button onclick="processData()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0">
-                            <i class="fas fa-magic mr-2"></i> แยกข้อมูล (Extract)
-                        </button>
-                        <button onclick="clearAll()" class="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-lg transition-colors">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                        <button onclick="processData()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow"><i class="fas fa-bolt"></i> แยกข้อมูล</button>
+                        <button onclick="clearAll()" class="px-4 bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold rounded-lg"><i class="fas fa-trash"></i></button>
                     </div>
-                </div>
-
-                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-xs text-blue-800">
-                    <strong><i class="fas fa-info-circle"></i> คำแนะนำ:</strong> 
-                    ก๊อปปี้ข้อความจาก PDF มาวางได้เลย ระบบจะตัดคำว่า "ชื่อบริษัท", "ที่อยู่" ออกให้เอง
                 </div>
             </div>
 
             <div class="space-y-4">
-                <div class="bg-white p-6 rounded-xl border-2 border-green-100 shadow-lg relative">
-                    <div class="absolute -top-3 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded shadow">
-                        STEP 2: ตรวจสอบ & บันทึก
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-lg">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">2. ตรวจสอบข้อมูล</h2>
+                    
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Company Name</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="companyName" class="flex-1 p-2 border border-indigo-200 rounded font-bold text-indigo-900 bg-indigo-50" placeholder="ชื่อภาษาไทย (เช่น ปตท)">
+                            <button onclick="searchGovData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 rounded shadow" title="ค้นหาจาก Data.go.th"><i class="fas fa-search"></i> ค้นรัฐฯ</button>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1">*ค้นหาด้วยชื่อภาษาไทยจะได้ผลดีที่สุด</p>
                     </div>
 
-                    <div class="space-y-4 mt-2">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Company Name</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="companyName" class="flex-1 p-2.5 border border-gray-300 rounded-lg font-bold text-gray-800 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-400 transition-all" placeholder="ชื่อบริษัท...">
-                                <button onclick="searchGovData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 rounded-lg shadow transition-colors" title="ค้นหาจาก Data.go.th">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
+                    <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
+                        <input type="text" id="addr_street" class="w-full p-2 border rounded text-sm" placeholder="เลขที่ / ถนน">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="addr_subdistrict" class="w-full p-2 border rounded text-sm" placeholder="แขวง/ตำบล">
+                            <input type="text" id="addr_district" class="w-full p-2 border rounded text-sm" placeholder="เขต/อำเภอ">
                         </div>
-
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                            <p class="text-xs font-bold text-gray-400 border-b border-gray-200 pb-1">
-                                <i class="fas fa-map-marker-alt mr-1"></i> ที่อยู่ (Address Details)
-                            </p>
-                            
-                            <input type="text" id="addr_street" class="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-400" placeholder="เลขที่ / หมู่บ้าน / ถนน">
-                            
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="text" id="addr_subdistrict" class="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-400" placeholder="แขวง / ตำบล">
-                                <input type="text" id="addr_district" class="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-400" placeholder="เขต / อำเภอ">
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="text" id="addr_province" class="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-400" placeholder="จังหวัด">
-                                <input type="text" id="addr_zip" class="w-full p-2 border border-gray-300 rounded text-sm text-center font-bold text-indigo-700 bg-indigo-50 focus:ring-1 focus:ring-blue-400" placeholder="รหัส ปณ.">
-                            </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="addr_province" class="w-full p-2 border rounded text-sm" placeholder="จังหวัด">
+                            <input type="text" id="addr_zip" class="w-full p-2 border rounded text-sm text-center font-bold text-indigo-800" placeholder="รหัส ปณ.">
                         </div>
+                    </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1">Tax ID (13 หลัก)</label>
-                                <input type="text" id="taxId" class="w-full p-2 border border-gray-300 rounded text-sm bg-gray-50 focus:bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1">Phone</label>
-                                <input type="text" id="phone" class="w-full p-2 border border-gray-300 rounded text-sm bg-gray-50 focus:bg-white">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Email</label>
-                            <input type="text" id="email" class="w-full p-2 border border-gray-300 rounded text-sm bg-gray-50 focus:bg-white">
-                        </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div><label class="text-xs font-bold text-gray-500">Tax ID</label><input type="text" id="taxId" class="w-full p-2 border rounded text-sm"></div>
+                        <div><label class="text-xs font-bold text-gray-500">Phone</label><input type="text" id="phone" class="w-full p-2 border rounded text-sm"></div>
+                    </div>
+                    <div class="mt-2"><label class="text-xs font-bold text-gray-500">Email</label><input type="text" id="email" class="w-full p-2 border rounded text-sm"></div>
 
-                        <hr class="border-gray-200 my-2">
-
-                        <div>
-                            <button onclick="saveToSheet()" id="btnSave" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-4 rounded-lg shadow-lg flex justify-center items-center gap-2 transition-all transform active:scale-95">
-                                <i class="fas fa-save text-lg"></i> 
-                                <span class="text-base">บันทึกลง Google Sheet</span>
-                            </button>
-                            <p id="statusMsg" class="text-center text-xs mt-2 min-h-[20px] font-semibold text-gray-500"></p>
-                        </div>
+                    <div class="mt-6">
+                        <button onclick="saveToSheet()" id="btnSave" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow flex justify-center items-center gap-2">
+                            <i class="fas fa-save"></i> บันทึกลง Google Sheet
+                        </button>
+                        <p id="statusMsg" class="text-center text-xs mt-2 min-h-[20px] font-semibold"></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-<script>
-        // ==========================================
-        // ⚙️ ใส่ URL ของ Google Apps Script อันเดิมของคุณ
-        // ==========================================
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVLEtqFvn2XKgrzh0TvlH0fcOoObh-AVp7YasMF1RMD0HiJF16e1K2HXXbnGGfwZEPCw/exec'; 
-        // *ไม่ต้องใส่ API Key ตรงนี้แล้ว เราย้ายไปซ่อนใน Google Script เพื่อความปลอดภัย*
+
+    <script>
+        // ------------------------------------------------------------------
+        // 1. ตั้งค่า URL ของ Google Apps Script (สำหรับการบันทึก)
+        const GOOGLE_SCRIPT_SAVE_URL = 'https://script.google.com/macros/s/AKfycbwc9E5envkiUo0aL7T7LHwMdW77LnEEiLLEyYeA_1V8X5nIOtsTI8Isu8rLxzF38Ry6kw/exec'; 
+        
+        // 2. ตั้งค่า API ของภาครัฐ (สำหรับการค้นหา) - ใส่ให้เรียบร้อยแล้ว
+        const DATA_GO_API_KEY = '9rHImc7OHx2cXvu6rbzJNXBCchBSM4Br'; 
+        const DATA_GO_RESOURCE_ID = 'b868169c-f75a-4dbc-a0bc-a1c9c8312f8e'; 
+        // ------------------------------------------------------------------
 
         function clearAll() {
             document.getElementById('rawInput').value = '';
             resetFields();
             setStatus('');
         }
-
         function resetFields() {
-            const fields = ['companyName', 'addr_street', 'addr_subdistrict', 'addr_district', 'addr_province', 'addr_zip', 'taxId', 'phone', 'email'];
-            fields.forEach(id => document.getElementById(id).value = '');
+            ['companyName', 'addr_street', 'addr_subdistrict', 'addr_district', 'addr_province', 'addr_zip', 'taxId', 'phone', 'email'].forEach(id => document.getElementById(id).value = '');
         }
-
-        function setStatus(msg, type = 'normal') {
+        function setStatus(msg, isError = false) {
             const el = document.getElementById('statusMsg');
-            el.innerHTML = msg;
-            el.className = 'text-center text-xs mt-2 min-h-[20px] font-semibold ' + (type === 'error' ? 'text-red-500' : 'text-green-600');
+            el.innerText = msg;
+            el.className = 'text-center text-xs mt-2 min-h-[20px] font-semibold ' + (isError ? 'text-red-500' : 'text-green-600');
         }
-
         function cleanSuffix(text) {
             return text.replace(/(ชื่อบริษัท|Company Name|Head Office|สำนักงานใหญ่|ที่อยู่|Address|รหัสไปรษณีย์|Postal Code|จังหวัด|Province|อำเภอเมือง|City|เบอร์โทรศัพท์|Phone|อีเมลล์ผู้ใช้งาน|Email|อีเมล).*$/i, '').trim();
         }
 
-        // --- PART 1: แกะข้อมูลจาก PDF (เหมือนเดิม) ---
+        // --- PART 1: PDF PARSER ---
         function processData() {
             const rawText = document.getElementById('rawInput').value;
             resetFields();
             const lines = rawText.split('\n').map(l => l.trim()).filter(l => l !== '');
-            
             lines.forEach(line => {
                 const lowerLine = line.toLowerCase();
                 const cleaned = cleanSuffix(line);
-
                 if (line.match(/ชื่อบริษัท$/) || (/(Co\.,|Ltd\.|Limited|Company|บริษัท)/i.test(line) && !lowerLine.includes('end customer'))) {
                     if (!document.getElementById('companyName').value) document.getElementById('companyName').value = cleaned.replace(/[\(\)]/g, '').trim();
                 }
@@ -171,7 +117,6 @@ Bangkok จังหวัด
                 if (phoneMatch) document.getElementById('phone').value = phoneMatch[0];
                 const taxMatch = line.match(/\b\d{13}\b/);
                 if (taxMatch) document.getElementById('taxId').value = taxMatch[0];
-
                 if (line.match(/รหัสไปรษณีย์$/) || /^\d{5}$/.test(cleaned)) {
                     const zipMatch = line.match(/\d{5}/);
                     if (zipMatch) document.getElementById('addr_zip').value = zipMatch[0];
@@ -187,57 +132,67 @@ Bangkok จังหวัด
             });
         }
 
-        // --- PART 2: ค้นหาผ่าน Google Script (แก้ปัญหา CORS) ---
+        // --- PART 2: DIRECT API FETCH (ยิงตรงจากเครื่องคุณ ไม่ผ่าน Google) ---
         async function searchGovData() {
             const companyName = document.getElementById('companyName').value;
             const btn = document.querySelector('button[title="ค้นหาจาก Data.go.th"]');
             
             if (!companyName) { alert('กรุณาใส่ชื่อบริษัทก่อนค้นหา'); return; }
-            if (GOOGLE_SCRIPT_URL.includes('วาง_URL')) { alert('⚠️ กรุณาใส่ URL Google Apps Script ก่อน'); return; }
 
             const originalContent = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             btn.disabled = true;
 
             try {
-                // ยิงไปหา Google Script แทน (ปลอดภัยกว่า)
-                const url = `${GOOGLE_SCRIPT_URL}?q=${encodeURIComponent(companyName)}`;
-                const response = await fetch(url); 
-                const data = await response.json();
+                // สร้าง URL (สังเกต: ส่ง api-key ใน Header ซึ่ง Browser ทำได้ไม่มีปัญหา)
+                const url = `https://opend.data.go.th/get-ckan/datastore_search?resource_id=${DATA_GO_RESOURCE_ID}&q=${encodeURIComponent(companyName)}&limit=1`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'api-key': DATA_GO_API_KEY
+                    }
+                });
 
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
                 if (data.result && data.result.records.length > 0) {
                     const record = data.result.records[0];
-                    console.log("Gov Data Found:", record);
+                    console.log("Found:", record);
 
+                    // Mapping Data
                     if (record.juristic_id) document.getElementById('taxId').value = record.juristic_id;
                     if (record.juristic_name) document.getElementById('companyName').value = record.juristic_name;
                     
-                    // Logic การเติมที่อยู่ (พยายามดึง field ที่มี)
                     let fullAddr = record.address_detail || record.address || "";
                     if(fullAddr) document.getElementById('addr_street').value = fullAddr;
                     if (record.province) document.getElementById('addr_province').value = record.province;
                     if (record.amphur) document.getElementById('addr_district').value = record.amphur;
                     if (record.tumbol) document.getElementById('addr_subdistrict').value = record.tumbol;
 
-                    setStatus(`✅ พบข้อมูล: ${record.juristic_name}`, 'normal');
+                    setStatus(`✅ พบข้อมูล: ${record.juristic_name}`, false);
                 } else {
-                    setStatus('❌ ไม่พบข้อมูลบริษัทนี้ในระบบรัฐ', 'error');
+                    setStatus('❌ ไม่พบข้อมูล (ลองตรวจสอบชื่อไทย/อังกฤษ)', true);
                 }
+
             } catch (error) {
                 console.error(error);
-                setStatus('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล', 'error');
+                setStatus('⚠️ เชื่อมต่อ Data.go.th ไม่ได้ (อาจติด CORS หรือเน็ต)', true);
             } finally {
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
             }
         }
 
-        // --- PART 3: บันทึกลง Sheet (เหมือนเดิม) ---
+        // --- PART 3: SAVE TO SHEET ---
         function saveToSheet() {
-            if(GOOGLE_SCRIPT_URL.includes('วาง_URL')) { alert('⚠️ ใส่ URL ก่อนครับ'); return; }
+            if(GOOGLE_SCRIPT_SAVE_URL.includes('วาง_URL')) { alert('กรุณาใส่ URL Google Script ที่บรรทัด 116 ก่อนครับ'); return; }
 
             const btn = document.getElementById('btnSave');
-            
             const fullAddress = [
                 document.getElementById('addr_street').value,
                 document.getElementById('addr_subdistrict').value,
@@ -254,10 +209,10 @@ Bangkok จังหวัด
                 email: document.getElementById('email').value
             };
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
             btn.disabled = true;
 
-            fetch(GOOGLE_SCRIPT_URL, {
+            fetch(GOOGLE_SCRIPT_SAVE_URL, {
                 method: 'POST',
                 mode: 'no-cors', 
                 headers: { 'Content-Type': 'text/plain' },
@@ -266,7 +221,7 @@ Bangkok จังหวัด
             .then(() => {
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> บันทึกสำเร็จ!';
                 btn.classList.replace('bg-green-600', 'bg-blue-600');
-                setStatus('บันทึกเรียบร้อย', 'normal');
+                setStatus('บันทึกเรียบร้อย');
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-save"></i> บันทึกลง Google Sheet';
                     btn.disabled = false;
@@ -276,13 +231,10 @@ Bangkok จังหวัด
             })
             .catch(error => {
                 btn.innerHTML = '❌ ผิดพลาด';
-                setStatus('ส่งข้อมูลไม่สำเร็จ', 'error');
+                setStatus('ส่งข้อมูลไม่สำเร็จ', true);
                 btn.disabled = false;
             });
         }
     </script>
-
 </body>
 </html>
-
-
