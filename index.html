@@ -124,22 +124,12 @@ Bangkok จังหวัด
             </div>
         </div>
     </div>
-
-    <script>
+<script>
         // ==========================================
-        // ⚙️ CONFIGURATION (ตั้งค่าระบบ)
+        // ⚙️ ใส่ URL ของ Google Apps Script อันเดิมของคุณ
         // ==========================================
-        
-        // 1. ใส่ URL ของ Google Apps Script ที่คุณได้มา (สำคัญมาก!)
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPypaStZQs-LUQmN49o3BIXIpHnOQEdEzZ2xNW7YPo2roM-ZtHqbk_jholUyIuymvBhA/exec'; 
-
-        // 2. Token จาก Data.go.th (ใส่ให้แล้ว)
-        const DATA_GO_API_KEY = '9rHImc7OHx2cXvu6rbzJNXBCchBSM4Br'; 
-
-        // 3. Resource ID ของนิติบุคคล (ใส่ให้แล้ว)
-        const DATA_GO_RESOURCE_ID = 'bc6ed576-dee1-4b72-b144-e11c8d122e26';
-
-        // ==========================================
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCpKd4mNVYkwH-z_oJmSlDAEV95eAo3FDk4_THxRPQ7bZahhC2Ydm8k9lo8aoyV0R3Eg/exec'; 
+        // *ไม่ต้องใส่ API Key ตรงนี้แล้ว เราย้ายไปซ่อนใน Google Script เพื่อความปลอดภัย*
 
         function clearAll() {
             document.getElementById('rawInput').value = '';
@@ -154,134 +144,100 @@ Bangkok จังหวัด
 
         function setStatus(msg, type = 'normal') {
             const el = document.getElementById('statusMsg');
-            el.innerText = msg;
+            el.innerHTML = msg;
             el.className = 'text-center text-xs mt-2 min-h-[20px] font-semibold ' + (type === 'error' ? 'text-red-500' : 'text-green-600');
         }
 
         function cleanSuffix(text) {
-            // ลบคำขยะภาษาไทยที่ติดมาจาก PDF
             return text.replace(/(ชื่อบริษัท|Company Name|Head Office|สำนักงานใหญ่|ที่อยู่|Address|รหัสไปรษณีย์|Postal Code|จังหวัด|Province|อำเภอเมือง|City|เบอร์โทรศัพท์|Phone|อีเมลล์ผู้ใช้งาน|Email|อีเมล).*$/i, '').trim();
         }
 
-        // --- PART 1: SMART EXTRACTOR ---
+        // --- PART 1: แกะข้อมูลจาก PDF (เหมือนเดิม) ---
         function processData() {
             const rawText = document.getElementById('rawInput').value;
             resetFields();
-
             const lines = rawText.split('\n').map(l => l.trim()).filter(l => l !== '');
             
             lines.forEach(line => {
                 const lowerLine = line.toLowerCase();
                 const cleaned = cleanSuffix(line);
 
-                // 1. ชื่อบริษัท
                 if (line.match(/ชื่อบริษัท$/) || (/(Co\.,|Ltd\.|Limited|Company|บริษัท)/i.test(line) && !lowerLine.includes('end customer'))) {
-                    if (!document.getElementById('companyName').value) {
-                        document.getElementById('companyName').value = cleaned.replace(/[\(\)]/g, '').trim();
-                    }
+                    if (!document.getElementById('companyName').value) document.getElementById('companyName').value = cleaned.replace(/[\(\)]/g, '').trim();
                 }
-
-                // 2. ข้อมูลติดต่อ
                 const emailMatch = line.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
                 if (emailMatch) document.getElementById('email').value = emailMatch[0];
-
                 const phoneMatch = line.match(/(0\d{1,2}[-\s]?\d{3,4}[-\s]?\d{3,4})/);
                 if (phoneMatch) document.getElementById('phone').value = phoneMatch[0];
-
                 const taxMatch = line.match(/\b\d{13}\b/);
                 if (taxMatch) document.getElementById('taxId').value = taxMatch[0];
 
-                // 3. ที่อยู่ (แยกช่อง)
-                // Zip Code
                 if (line.match(/รหัสไปรษณีย์$/) || /^\d{5}$/.test(cleaned)) {
                     const zipMatch = line.match(/\d{5}/);
                     if (zipMatch) document.getElementById('addr_zip').value = zipMatch[0];
-                }
-                // Province
-                else if (line.match(/จังหวัด$/) || lowerLine.includes('bangkok') || lowerLine.includes('province')) {
+                } else if (line.match(/จังหวัด$/) || lowerLine.includes('bangkok') || lowerLine.includes('province')) {
                      if (cleaned.length < 30) document.getElementById('addr_province').value = cleaned;
-                }
-                // District
-                else if (line.match(/(อำเภอเมือง|อำเภอ|เขต)$/) || lowerLine.includes('district') || lowerLine.includes('khet')) {
+                } else if (line.match(/(อำเภอเมือง|อำเภอ|เขต)$/) || lowerLine.includes('district') || lowerLine.includes('khet')) {
                     document.getElementById('addr_district').value = cleaned;
-                }
-                // Sub-district
-                else if (line.match(/(แขวง|ตำบล)$/) || lowerLine.includes('sub-district') || lowerLine.includes('khwaeng')) {
+                } else if (line.match(/(แขวง|ตำบล)$/) || lowerLine.includes('sub-district') || lowerLine.includes('khwaeng')) {
                     document.getElementById('addr_subdistrict').value = cleaned;
-                }
-                // Street / Number
-                else if (line.match(/ที่อยู่$/) || lowerLine.includes('road') || lowerLine.includes('soi') || lowerLine.includes('moo')) {
+                } else if (line.match(/ที่อยู่$/) || lowerLine.includes('road') || lowerLine.includes('soi') || lowerLine.includes('moo')) {
                     document.getElementById('addr_street').value = cleaned;
                 }
             });
         }
 
-        // --- PART 2: GOV API SEARCH ---
+        // --- PART 2: ค้นหาผ่าน Google Script (แก้ปัญหา CORS) ---
         async function searchGovData() {
             const companyName = document.getElementById('companyName').value;
             const btn = document.querySelector('button[title="ค้นหาจาก Data.go.th"]');
             
             if (!companyName) { alert('กรุณาใส่ชื่อบริษัทก่อนค้นหา'); return; }
-            if (DATA_GO_RESOURCE_ID === '') { alert('⚠️ ไม่พบ Resource ID กรุณาตรวจสอบโค้ด'); return; }
+            if (GOOGLE_SCRIPT_URL.includes('วาง_URL')) { alert('⚠️ กรุณาใส่ URL Google Apps Script ก่อน'); return; }
 
             const originalContent = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             btn.disabled = true;
 
             try {
-                // ค้นหาแบบกว้าง (Contains)
-                const url = `https://opend.data.go.th/get-ckan/datastore_search?resource_id=${DATA_GO_RESOURCE_ID}&q=${encodeURIComponent(companyName)}&limit=1`;
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: { 'api-key': DATA_GO_API_KEY }
-                });
-
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-
+                // ยิงไปหา Google Script แทน (ปลอดภัยกว่า)
+                const url = `${GOOGLE_SCRIPT_URL}?q=${encodeURIComponent(companyName)}`;
+                const response = await fetch(url); 
                 const data = await response.json();
-                
+
                 if (data.result && data.result.records.length > 0) {
                     const record = data.result.records[0];
-                    console.log("Gov Data Found:", record); // ดูข้อมูลดิบใน Console
+                    console.log("Gov Data Found:", record);
 
-                    // Mapping Data (ปรับตาม Field จริงของ API นิติบุคคล)
-                    // หมายเหตุ: ชื่อ field อาจแตกต่างกันไปตาม dataset ต้องดู Console ประกอบ
                     if (record.juristic_id) document.getElementById('taxId').value = record.juristic_id;
                     if (record.juristic_name) document.getElementById('companyName').value = record.juristic_name;
                     
-                    // ที่อยู่จาก API มักมาเป็นก้อนเดียว หรือแยก field
-                    if (record.address_detail) document.getElementById('addr_street').value = record.address_detail;
-                    else if (record.address) document.getElementById('addr_street').value = record.address;
-
+                    // Logic การเติมที่อยู่ (พยายามดึง field ที่มี)
+                    let fullAddr = record.address_detail || record.address || "";
+                    if(fullAddr) document.getElementById('addr_street').value = fullAddr;
                     if (record.province) document.getElementById('addr_province').value = record.province;
                     if (record.amphur) document.getElementById('addr_district').value = record.amphur;
                     if (record.tumbol) document.getElementById('addr_subdistrict').value = record.tumbol;
 
-                    setStatus(`✅ พบข้อมูล: ${record.juristic_name || 'บริษัท'}`, 'normal');
+                    setStatus(`✅ พบข้อมูล: ${record.juristic_name}`, 'normal');
                 } else {
-                    setStatus('❌ ไม่พบข้อมูลในฐานข้อมูลภาครัฐ', 'error');
+                    setStatus('❌ ไม่พบข้อมูลบริษัทนี้ในระบบรัฐ', 'error');
                 }
-
             } catch (error) {
                 console.error(error);
-                setStatus('⚠️ เชื่อมต่อ API ล้มเหลว (เช็ค Console)', 'error');
+                setStatus('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล', 'error');
             } finally {
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
             }
         }
 
-        // --- PART 3: SAVE TO GOOGLE SHEET ---
+        // --- PART 3: บันทึกลง Sheet (เหมือนเดิม) ---
         function saveToSheet() {
-            if(GOOGLE_SCRIPT_URL.includes('วาง_URL') || GOOGLE_SCRIPT_URL === '') {
-                alert('⚠️ กรุณาใส่ URL ของ Google Apps Script ในบรรทัดที่ 142 ก่อนครับ');
-                return;
-            }
+            if(GOOGLE_SCRIPT_URL.includes('วาง_URL')) { alert('⚠️ ใส่ URL ก่อนครับ'); return; }
 
             const btn = document.getElementById('btnSave');
             
-            // รวมที่อยู่เป็น String เดียวเพื่อส่งเข้า Sheet
             const fullAddress = [
                 document.getElementById('addr_street').value,
                 document.getElementById('addr_subdistrict').value,
@@ -292,16 +248,14 @@ Bangkok จังหวัด
 
             const data = {
                 company: document.getElementById('companyName').value,
-                address: fullAddress, // ส่งไปเป็นก้อนเดียว
+                address: fullAddress,
                 taxId: document.getElementById('taxId').value,
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value
             };
 
-            // UI Loading
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่งข้อมูล...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...';
             btn.disabled = true;
-            btn.classList.add('opacity-75');
 
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
@@ -312,24 +266,22 @@ Bangkok จังหวัด
             .then(() => {
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> บันทึกสำเร็จ!';
                 btn.classList.replace('bg-green-600', 'bg-blue-600');
-                setStatus('บันทึกข้อมูลเรียบร้อยแล้ว');
-                
+                setStatus('บันทึกเรียบร้อย', 'normal');
                 setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-save text-lg"></i> <span class="text-base">บันทึกลง Google Sheet</span>';
+                    btn.innerHTML = '<i class="fas fa-save"></i> บันทึกลง Google Sheet';
                     btn.disabled = false;
-                    btn.classList.remove('opacity-75');
                     btn.classList.replace('bg-blue-600', 'bg-green-600');
                     setStatus('');
                 }, 3000);
             })
             .catch(error => {
-                console.error('Error:', error);
-                btn.innerHTML = '<i class="fas fa-times-circle"></i> ผิดพลาด';
-                setStatus('ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่', 'error');
+                btn.innerHTML = '❌ ผิดพลาด';
+                setStatus('ส่งข้อมูลไม่สำเร็จ', 'error');
                 btn.disabled = false;
-                btn.classList.remove('opacity-75');
             });
         }
     </script>
+
 </body>
 </html>
+
