@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Data Pro (Direct Fetch)</title>
+    <title>Company Data Pro (CORS Bypass)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,7 +15,7 @@
         <div class="bg-indigo-900 p-6 text-white flex justify-between items-center shadow-lg">
             <div>
                 <h1 class="text-2xl font-bold"><i class="fas fa-building"></i> ระบบดึงข้อมูลนิติบุคคล</h1>
-                <p class="text-sm opacity-80 pl-8">Direct API Connection (Bypassing Server Block)</p>
+                <p class="text-sm opacity-80 pl-8">CORS Bypass Version (AllOrigins Proxy)</p>
             </div>
         </div>
 
@@ -41,7 +41,7 @@
                             <input type="text" id="companyName" class="flex-1 p-2 border border-indigo-200 rounded font-bold text-indigo-900 bg-indigo-50" placeholder="ชื่อภาษาไทย (เช่น ปตท)">
                             <button onclick="searchGovData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 rounded shadow" title="ค้นหาจาก Data.go.th"><i class="fas fa-search"></i> ค้นรัฐฯ</button>
                         </div>
-                        <p class="text-[10px] text-gray-400 mt-1">*ค้นหาด้วยชื่อภาษาไทยจะได้ผลดีที่สุด</p>
+                        <p class="text-[10px] text-gray-400 mt-1">*ระบบจะใช้อุโมงค์พิเศษในการดึงข้อมูล</p>
                     </div>
 
                     <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
@@ -75,10 +75,10 @@
 
     <script>
         // ------------------------------------------------------------------
-        // 1. ตั้งค่า URL ของ Google Apps Script (สำหรับการบันทึก)
+        // 1. URL สำหรับบันทึก (ใช้ Google Script เดิมที่ deploy ไว้ล่าสุด)
         const GOOGLE_SCRIPT_SAVE_URL = 'https://script.google.com/macros/s/AKfycbwc9E5envkiUo0aL7T7LHwMdW77LnEEiLLEyYeA_1V8X5nIOtsTI8Isu8rLxzF38Ry6kw/exec'; 
         
-        // 2. ตั้งค่า API ของภาครัฐ (สำหรับการค้นหา) - ใส่ให้เรียบร้อยแล้ว
+        // 2. API Config
         const DATA_GO_API_KEY = '9rHImc7OHx2cXvu6rbzJNXBCchBSM4Br'; 
         const DATA_GO_RESOURCE_ID = 'b868169c-f75a-4dbc-a0bc-a1c9c8312f8e'; 
         // ------------------------------------------------------------------
@@ -132,7 +132,7 @@
             });
         }
 
-        // --- PART 2: DIRECT API FETCH (ยิงตรงจากเครื่องคุณ ไม่ผ่าน Google) ---
+        // --- PART 2: PROXY FETCH (ใช้ AllOrigins แก้ CORS) ---
         async function searchGovData() {
             const companyName = document.getElementById('companyName').value;
             const btn = document.querySelector('button[title="ค้นหาจาก Data.go.th"]');
@@ -144,19 +144,16 @@
             btn.disabled = true;
 
             try {
-                // สร้าง URL (สังเกต: ส่ง api-key ใน Header ซึ่ง Browser ทำได้ไม่มีปัญหา)
-                const url = `https://opend.data.go.th/get-ckan/datastore_search?resource_id=${DATA_GO_RESOURCE_ID}&q=${encodeURIComponent(companyName)}&limit=1`;
+                // 1. สร้าง URL เป้าหมาย (Data.go.th) ใส่ API Key ไปใน URL เลย
+                const targetUrl = `https://opend.data.go.th/get-ckan/datastore_search?resource_id=${DATA_GO_RESOURCE_ID}&q=${encodeURIComponent(companyName)}&limit=1&api-key=${DATA_GO_API_KEY}`;
                 
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'api-key': DATA_GO_API_KEY
-                    }
-                });
+                // 2. หุ้มด้วย AllOrigins Proxy
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
-                }
+                // 3. ยิงไปที่ Proxy แทน
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) throw new Error("Proxy Error");
 
                 const data = await response.json();
                 
@@ -164,7 +161,6 @@
                     const record = data.result.records[0];
                     console.log("Found:", record);
 
-                    // Mapping Data
                     if (record.juristic_id) document.getElementById('taxId').value = record.juristic_id;
                     if (record.juristic_name) document.getElementById('companyName').value = record.juristic_name;
                     
@@ -176,12 +172,12 @@
 
                     setStatus(`✅ พบข้อมูล: ${record.juristic_name}`, false);
                 } else {
-                    setStatus('❌ ไม่พบข้อมูล (ลองตรวจสอบชื่อไทย/อังกฤษ)', true);
+                    setStatus('❌ ไม่พบข้อมูล (ลองชื่อไทย)', true);
                 }
 
             } catch (error) {
                 console.error(error);
-                setStatus('⚠️ เชื่อมต่อ Data.go.th ไม่ได้ (อาจติด CORS หรือเน็ต)', true);
+                setStatus('⚠️ Error: ลองกดค้นหาใหม่อีกครั้ง', true);
             } finally {
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
@@ -190,7 +186,7 @@
 
         // --- PART 3: SAVE TO SHEET ---
         function saveToSheet() {
-            if(GOOGLE_SCRIPT_SAVE_URL.includes('วาง_URL')) { alert('กรุณาใส่ URL Google Script ที่บรรทัด 116 ก่อนครับ'); return; }
+            if(GOOGLE_SCRIPT_SAVE_URL.includes('วาง_URL')) { alert('ใส่ URL Script บรรทัด 116 ก่อนครับ'); return; }
 
             const btn = document.getElementById('btnSave');
             const fullAddress = [
