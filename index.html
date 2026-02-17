@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Data Pro (CORS Bypass)</title>
+    <title>Company Data Helper (Manual & Auto)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,39 +12,51 @@
 <body class="bg-gray-100 p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
-        <div class="bg-indigo-900 p-6 text-white flex justify-between items-center shadow-lg">
-            <div>
-                <h1 class="text-2xl font-bold"><i class="fas fa-building"></i> ระบบดึงข้อมูลนิติบุคคล</h1>
-                <p class="text-sm opacity-80 pl-8">CORS Bypass Version (AllOrigins Proxy)</p>
-            </div>
+        <div class="bg-slate-800 p-6 text-white shadow-lg">
+            <h1 class="text-2xl font-bold"><i class="fas fa-briefcase"></i> ระบบช่วยกรอกข้อมูลนิติบุคคล</h1>
+            <p class="text-sm opacity-80">PDF Parser + Smart Links (DataForThai / DBD)</p>
         </div>
 
         <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
             <div class="space-y-4">
-                <div class="bg-yellow-50 p-5 rounded-xl border border-yellow-200 shadow-sm">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">1. วางข้อมูลจาก PDF:</label>
-                    <textarea id="rawInput" rows="15" class="w-full p-4 border border-yellow-300 rounded-lg bg-yellow-50 focus:ring-2 focus:ring-yellow-500 text-sm leading-relaxed" placeholder="วางข้อความ..."></textarea>
+                <div class="bg-yellow-50 p-5 rounded-xl border border-yellow-200 shadow-sm relative">
+                    <span class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-bl-lg">STEP 1</span>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">วางข้อมูลจาก PDF:</label>
+                    <textarea id="rawInput" rows="15" class="w-full p-4 border border-yellow-300 rounded-lg bg-yellow-50 focus:ring-2 focus:ring-yellow-500 text-sm leading-relaxed" placeholder="วางข้อความที่นี่..."></textarea>
+                    
                     <div class="flex gap-3 mt-4">
-                        <button onclick="processData()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow"><i class="fas fa-bolt"></i> แยกข้อมูล</button>
+                        <button onclick="processData()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow"><i class="fas fa-bolt"></i> แยกข้อมูล (Extract)</button>
                         <button onclick="clearAll()" class="px-4 bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold rounded-lg"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-lg">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">2. ตรวจสอบข้อมูล</h2>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-lg relative">
+                    <span class="absolute top-0 right-0 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">STEP 2</span>
                     
                     <div class="mb-4">
                         <label class="text-xs font-bold text-gray-500 uppercase">Company Name</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="companyName" class="flex-1 p-2 border border-indigo-200 rounded font-bold text-indigo-900 bg-indigo-50" placeholder="ชื่อภาษาไทย (เช่น ปตท)">
-                            <button onclick="searchGovData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 rounded shadow" title="ค้นหาจาก Data.go.th"><i class="fas fa-search"></i> ค้นรัฐฯ</button>
+                        <input type="text" id="companyName" class="w-full p-2 border-2 border-indigo-100 rounded font-bold text-indigo-900 bg-indigo-50 mb-2" placeholder="ชื่อภาษาไทย (เช่น ปตท)">
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="openLink('dataforthai')" class="bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 rounded text-sm font-bold border border-blue-300 transition">
+                                <i class="fas fa-external-link-alt"></i> เปิด DataForThai
+                            </button>
+                            <button onclick="openLink('dbd')" class="bg-orange-100 hover:bg-orange-200 text-orange-800 py-2 rounded text-sm font-bold border border-orange-300 transition">
+                                <i class="fas fa-search"></i> เปิด DBD Warehouse
+                            </button>
                         </div>
-                        <p class="text-[10px] text-gray-400 mt-1">*ระบบจะใช้อุโมงค์พิเศษในการดึงข้อมูล</p>
+                        <div class="mt-2">
+                             <button onclick="tryAutoFetch()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 rounded text-xs border border-gray-300">
+                                <i class="fas fa-robot"></i> ลองดึงอัตโนมัติ (อาจติดขัด)
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
+                    <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400 border-b pb-1">ที่อยู่ (Address)</p>
                         <input type="text" id="addr_street" class="w-full p-2 border rounded text-sm" placeholder="เลขที่ / ถนน">
                         <div class="grid grid-cols-2 gap-2">
                             <input type="text" id="addr_subdistrict" class="w-full p-2 border rounded text-sm" placeholder="แขวง/ตำบล">
@@ -63,7 +75,7 @@
                     <div class="mt-2"><label class="text-xs font-bold text-gray-500">Email</label><input type="text" id="email" class="w-full p-2 border rounded text-sm"></div>
 
                     <div class="mt-6">
-                        <button onclick="saveToSheet()" id="btnSave" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow flex justify-center items-center gap-2">
+                        <button onclick="saveToSheet()" id="btnSave" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow transition transform active:scale-95 flex justify-center items-center gap-2">
                             <i class="fas fa-save"></i> บันทึกลง Google Sheet
                         </button>
                         <p id="statusMsg" class="text-center text-xs mt-2 min-h-[20px] font-semibold"></p>
@@ -74,33 +86,35 @@
     </div>
 
     <script>
-        // ------------------------------------------------------------------
-        // 1. URL สำหรับบันทึก (ใช้ Google Script เดิมที่ deploy ไว้ล่าสุด)
-        const GOOGLE_SCRIPT_SAVE_URL = 'https://script.google.com/macros/s/AKfycbwc9E5envkiUo0aL7T7LHwMdW77LnEEiLLEyYeA_1V8X5nIOtsTI8Isu8rLxzF38Ry6kw/exec'; 
-        
-        // 2. API Config
+        // ==========================================
+        // ⚙️ CONFIGURATION
+        // ==========================================
+        const GOOGLE_SCRIPT_SAVE_URL = 'วาง_URL_GOOGLE_APPS_SCRIPT_ที่นี่'; 
         const DATA_GO_API_KEY = '9rHImc7OHx2cXvu6rbzJNXBCchBSM4Br'; 
         const DATA_GO_RESOURCE_ID = 'b868169c-f75a-4dbc-a0bc-a1c9c8312f8e'; 
-        // ------------------------------------------------------------------
+        // ==========================================
 
         function clearAll() {
             document.getElementById('rawInput').value = '';
             resetFields();
             setStatus('');
         }
+
         function resetFields() {
             ['companyName', 'addr_street', 'addr_subdistrict', 'addr_district', 'addr_province', 'addr_zip', 'taxId', 'phone', 'email'].forEach(id => document.getElementById(id).value = '');
         }
+
         function setStatus(msg, isError = false) {
             const el = document.getElementById('statusMsg');
             el.innerText = msg;
             el.className = 'text-center text-xs mt-2 min-h-[20px] font-semibold ' + (isError ? 'text-red-500' : 'text-green-600');
         }
+
+        // --- 1. ระบบแยกข้อมูลจาก PDF ---
         function cleanSuffix(text) {
             return text.replace(/(ชื่อบริษัท|Company Name|Head Office|สำนักงานใหญ่|ที่อยู่|Address|รหัสไปรษณีย์|Postal Code|จังหวัด|Province|อำเภอเมือง|City|เบอร์โทรศัพท์|Phone|อีเมลล์ผู้ใช้งาน|Email|อีเมล).*$/i, '').trim();
         }
 
-        // --- PART 1: PDF PARSER ---
         function processData() {
             const rawText = document.getElementById('rawInput').value;
             resetFields();
@@ -132,61 +146,66 @@
             });
         }
 
-        // --- PART 2: PROXY FETCH (ใช้ AllOrigins แก้ CORS) ---
-        async function searchGovData() {
-            const companyName = document.getElementById('companyName').value;
-            const btn = document.querySelector('button[title="ค้นหาจาก Data.go.th"]');
+        // --- 2. ระบบเปิดลิงก์ (Manual Link) - วิธีนี้ชัวร์ที่สุด ---
+        function openLink(type) {
+            const name = document.getElementById('companyName').value.trim();
+            if (!name) { alert('กรุณาใส่ชื่อบริษัทก่อนครับ'); return; }
             
-            if (!companyName) { alert('กรุณาใส่ชื่อบริษัทก่อนค้นหา'); return; }
+            let url = '';
+            if (type === 'dataforthai') {
+                url = `https://www.dataforthai.com/company/list?q=${encodeURIComponent(name)}`;
+            } else if (type === 'dbd') {
+                url = `https://datawarehouse.dbd.go.th/search/profile`; 
+                // หมายเหตุ: DBD เป็นระบบปิด ต้องกดเข้าไปค้นหาเอง แต่เปิดหน้าเว็บรอไว้ให้ได้
+                alert('สำหรับ DBD ระบบจะเปิดหน้าค้นหาให้ กรุณาพิมพ์ชื่อบริษัทอีกครั้งในช่องค้นหาของ DBD');
+            }
+            window.open(url, '_blank');
+        }
 
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        // --- 3. ระบบดึงอัตโนมัติ (Auto Fetch via CorsProxy) ---
+        async function tryAutoFetch() {
+            const companyName = document.getElementById('companyName').value;
+            if (!companyName) { alert('ใส่ชื่อบริษัทก่อนครับ'); return; }
+            
+            const btn = document.querySelector('button[onclick="tryAutoFetch()"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดึง...';
             btn.disabled = true;
 
             try {
-                // 1. สร้าง URL เป้าหมาย (Data.go.th) ใส่ API Key ไปใน URL เลย
+                // ใช้ CorsProxy.io เป็นตัวกลาง (อาจจะผ่านหรืออาจจะโดนบล็อก ขึ้นอยู่กับจังหวะ)
+                // ส่ง API Key ผ่าน URL parameter แทน Header เพื่อลดโอกาสโดนตัด
                 const targetUrl = `https://opend.data.go.th/get-ckan/datastore_search?resource_id=${DATA_GO_RESOURCE_ID}&q=${encodeURIComponent(companyName)}&limit=1&api-key=${DATA_GO_API_KEY}`;
-                
-                // 2. หุ้มด้วย AllOrigins Proxy
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-                // 3. ยิงไปที่ Proxy แทน
                 const response = await fetch(proxyUrl);
-                
-                if (!response.ok) throw new Error("Proxy Error");
-
                 const data = await response.json();
-                
+
                 if (data.result && data.result.records.length > 0) {
                     const record = data.result.records[0];
-                    console.log("Found:", record);
-
                     if (record.juristic_id) document.getElementById('taxId').value = record.juristic_id;
-                    if (record.juristic_name) document.getElementById('companyName').value = record.juristic_name;
                     
                     let fullAddr = record.address_detail || record.address || "";
                     if(fullAddr) document.getElementById('addr_street').value = fullAddr;
                     if (record.province) document.getElementById('addr_province').value = record.province;
                     if (record.amphur) document.getElementById('addr_district').value = record.amphur;
                     if (record.tumbol) document.getElementById('addr_subdistrict').value = record.tumbol;
-
-                    setStatus(`✅ พบข้อมูล: ${record.juristic_name}`, false);
+                    
+                    setStatus('✅ ดึงข้อมูลสำเร็จ!');
                 } else {
-                    setStatus('❌ ไม่พบข้อมูล (ลองชื่อไทย)', true);
+                    setStatus('❌ ไม่พบข้อมูล (ลองกดปุ่มเปิดเว็บดูครับ)', true);
                 }
-
-            } catch (error) {
-                console.error(error);
-                setStatus('⚠️ Error: ลองกดค้นหาใหม่อีกครั้ง', true);
+            } catch (err) {
+                console.error(err);
+                setStatus('⚠️ ดึงอัตโนมัติไม่ผ่าน กรุณากดปุ่มเปิดเว็บแทน', true);
             } finally {
-                btn.innerHTML = originalContent;
+                btn.innerHTML = '<i class="fas fa-robot"></i> ลองดึงอัตโนมัติ (อาจติดขัด)';
                 btn.disabled = false;
             }
         }
 
-        // --- PART 3: SAVE TO SHEET ---
+        // --- 4. บันทึกลง Sheet ---
         function saveToSheet() {
-            if(GOOGLE_SCRIPT_SAVE_URL.includes('วาง_URL')) { alert('ใส่ URL Script บรรทัด 116 ก่อนครับ'); return; }
+            if(GOOGLE_SCRIPT_SAVE_URL.includes('วาง_URL')) { alert('ใส่ URL Google Script ก่อนครับ'); return; }
 
             const btn = document.getElementById('btnSave');
             const fullAddress = [
@@ -205,7 +224,7 @@
                 email: document.getElementById('email').value
             };
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่ง...';
             btn.disabled = true;
 
             fetch(GOOGLE_SCRIPT_SAVE_URL, {
@@ -215,19 +234,18 @@
                 body: JSON.stringify(data)
             })
             .then(() => {
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> บันทึกสำเร็จ!';
+                btn.innerHTML = '✅ เรียบร้อย!';
                 btn.classList.replace('bg-green-600', 'bg-blue-600');
-                setStatus('บันทึกเรียบร้อย');
+                setStatus('บันทึกข้อมูลแล้ว');
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-save"></i> บันทึกลง Google Sheet';
-                    btn.disabled = false;
                     btn.classList.replace('bg-blue-600', 'bg-green-600');
+                    btn.disabled = false;
                     setStatus('');
-                }, 3000);
+                }, 2000);
             })
             .catch(error => {
                 btn.innerHTML = '❌ ผิดพลาด';
-                setStatus('ส่งข้อมูลไม่สำเร็จ', true);
                 btn.disabled = false;
             });
         }
