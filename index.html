@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Data Extractor</title>
+    <title>Company Data Extractor (Smart PDF Version)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style> body { font-family: 'Sarabun', sans-serif; } </style>
@@ -11,37 +11,37 @@
 <body class="bg-gray-100 p-10">
 
     <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="bg-blue-600 p-5 text-white flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold">ระบบดึงข้อมูลบริษัท & Backup</h1>
-                <p class="text-sm opacity-80">เวอร์ชันอัปเดต: Auto-Extract</p>
-            </div>
+        <div class="bg-indigo-600 p-5 text-white">
+            <h1 class="text-2xl font-bold">ระบบดึงข้อมูลบริษัท (รองรับ PDF Copy)</h1>
+            <p class="text-sm opacity-80">ฉลาดขึ้น! รองรับการ Copy จากฟอร์มที่มีภาษาไทยปน</p>
         </div>
 
         <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             
             <div class="space-y-4">
-                <h2 class="text-lg font-semibold text-gray-700">1. กรอกข้อมูล (Input)</h2>
+                <h2 class="text-lg font-semibold text-gray-700">1. วางข้อมูลดิบ (Input)</h2>
                 <div class="bg-yellow-50 p-4 rounded-md border-2 border-yellow-200">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">ข้อความดิบ / Signature:</label>
-                    <textarea id="rawInput" rows="10" class="w-full p-2 border rounded bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="วางข้อความที่นี่..."></textarea>
-                    <button onclick="processData()" class="mt-3 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
-                        ดึงข้อมูล (Extract)
+                    <textarea id="rawInput" rows="12" class="w-full p-2 border rounded bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm" placeholder="วางข้อความที่นี่..."></textarea>
+                    <button onclick="processData()" class="mt-3 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded transition">
+                        ⚡ ดึงข้อมูลทันที
+                    </button>
+                    <button onclick="clearAll()" class="mt-2 w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-4 rounded text-sm transition">
+                        ล้างข้อมูล
                     </button>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <h2 class="text-lg font-semibold text-gray-700">2. ตรวจสอบ & บันทึก (Output)</h2>
+                <h2 class="text-lg font-semibold text-gray-700">2. ผลลัพธ์ (Output)</h2>
                 <div class="bg-green-50 p-6 rounded-md border-2 border-green-200 space-y-3">
                     
                     <div>
                         <label class="text-xs font-bold text-gray-500">ชื่อบริษัท</label>
-                        <input type="text" id="companyName" class="w-full p-2 border rounded bg-green-100 font-semibold">
+                        <input type="text" id="companyName" class="w-full p-2 border rounded bg-green-100 font-semibold text-indigo-900">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500">ที่อยู่</label>
-                        <textarea id="address" rows="3" class="w-full p-2 border rounded bg-green-100"></textarea>
+                        <label class="text-xs font-bold text-gray-500">ที่อยู่ (รวมหลายบรรทัด)</label>
+                        <textarea id="address" rows="4" class="w-full p-2 border rounded bg-green-100"></textarea>
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500">เลขผู้เสียภาษี</label>
@@ -64,65 +64,105 @@
                         <span>💾 บันทึกลง Google Sheet</span>
                     </button>
                     <p id="statusMsg" class="text-center text-sm mt-1 text-gray-500"></p>
-
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // *** ใส่ URL ของ Google Apps Script ที่คุณได้มาตรงนี้ ***
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPypaStZQs-LUQmN49o3BIXIpHnOQEdEzZ2xNW7YPo2roM-ZtHqbk_jholUyIuymvBhA/exec';
+        // *** วาง URL ของ Google Apps Script ที่นี่ ***
+        const GOOGLE_SCRIPT_URL = 'วาง_URL_จาก_GOOGLE_APPS_SCRIPT_ที่นี่';
 
-        // ฟังก์ชันหลัก: แยกข้อมูลจากข้อความที่ Paste
+        function clearAll() {
+            document.getElementById('rawInput').value = '';
+            resetFields();
+        }
+
+        function resetFields() {
+            ['companyName', 'address', 'taxId', 'phone', 'email'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        // ฟังก์ชันทำความสะอาดข้อความ (ลบคำต่อท้ายขยะจาก PDF)
+        function cleanLine(text) {
+            // ลบคำว่า "ชื่อบริษัท", "ที่อยู่", "เบอร์โทรศัพท์" ที่มักติดมาท้ายประโยค
+            return text
+                .replace(/(ชื่อบริษัท|Company Name|Head Office|สำนักงานใหญ่|ที่อยู่|Address|รหัสไปรษณีย์|Postal Code|จังหวัด|Province|อำเภอเมือง|City|เบอร์โทรศัพท์|Phone|อีเมลล์ผู้ใช้งาน|Email|อีเมล).*$/i, '')
+                .trim();
+        }
+
         function processData() {
             const rawText = document.getElementById('rawInput').value;
             resetFields();
 
-            const lines = rawText.split('\n').filter(line => line.trim() !== '');
-            if (lines.length > 0) {
-                let name = lines[0].replace(/^(ชื่อ|Company|Name)\s*[:\-\.]\s*/i, '');
-                document.getElementById('companyName').value = name.trim();
+            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l !== '');
+            let addressParts = [];
+            let companyFound = false;
+
+            // วนลูปทีละบรรทัด
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                let cleanedLine = cleanLine(line); // ตัดคำขยะออกก่อนวิเคราะห์
+
+                // 1. หา Email
+                const emailMatch = line.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
+                if (emailMatch && !document.getElementById('email').value) {
+                    document.getElementById('email').value = emailMatch[0];
+                    continue; // เจอแล้วข้ามไปบรรทัดต่อไป
+                }
+
+                // 2. หาเบอร์โทร
+                const phoneMatch = line.match(/(0\d{1,2}[-\s]?\d{3,4}[-\s]?\d{3,4})/);
+                if (phoneMatch && !document.getElementById('phone').value) {
+                    document.getElementById('phone').value = phoneMatch[0];
+                    continue;
+                }
+
+                // 3. หาเลขผู้เสียภาษี (13 หลัก)
+                const taxMatch = line.match(/\b\d{13}\b/);
+                if (taxMatch && !document.getElementById('taxId').value) {
+                    document.getElementById('taxId').value = taxMatch[0];
+                    continue;
+                }
+
+                // 4. หาชื่อบริษัท (Priority: ต้องมีคำว่า Co., Ltd, Company, บริษัท)
+                const isCompany = /(Co\.,|Ltd\.|Limited|Company|Corp\.|Inc\.|บริษัท|หจก\.|บมจ\.)/i.test(line);
+                if (isCompany && !companyFound) {
+                    // ถ้าเจอคำว่าบริษัท ให้ใช้ cleanedLine (ตัดคำว่า "ชื่อบริษัท" ทิ้ง)
+                    document.getElementById('companyName').value = cleanedLine.replace(/[\(\)]/g, '').trim(); // ลบวงเล็บส่วนเกิน
+                    companyFound = true;
+                    continue;
+                }
+
+                // 5. หาที่อยู่ (สะสมบรรทัดที่เหลือที่ดูเหมือนที่อยู่)
+                // เงื่อนไข: มีตัวเลข (บ้านเลขที่/รหัสปณ.) หรือมีคำว่า Road, Soi, Bangkok, แขวง, เขต
+                const isAddressKeyword = /(Road|Rd\.|Soi|Moo|Bangkok|Bkk|Province|District|Sub-district|Khet|Khwaeng|ถนน|ซอย|หมู่|แขวง|เขต|จ\.|จังหวัด|กทม|ต\.|อ\.|รหัสไปรษณีย์)/i.test(line);
+                const isPostalCode = /\b\d{5}\b/.test(line); // รหัสไปรษณีย์ 5 หลัก
+                
+                // ถ้าเป็นบรรทัดที่มี Address Keyword หรือเป็นรหัสไปรษณีย์ หรือเป็นภาษาอังกฤษล้วนที่ไม่มี @ (น่าจะเป็นชื่อเมือง/ถนน)
+                if (isAddressKeyword || isPostalCode || (cleanedLine.match(/^[A-Za-z0-9\s,\.\/-]+$/) && cleanedLine.length > 5 && !line.includes('@'))) {
+                    // กรองคำว่า "End Customer..." ทิ้ง
+                    if (!line.toLowerCase().startsWith('end customer') && !line.toLowerCase().startsWith('end user')) {
+                        addressParts.push(cleanedLine);
+                    }
+                }
             }
 
-            const emailMatch = rawText.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
-            if (emailMatch) document.getElementById('email').value = emailMatch[0];
-
-            const phoneMatch = rawText.match(/(0\d{1,2}[-\s]?\d{3,4}[-\s]?\d{3,4})/);
-            if (phoneMatch) document.getElementById('phone').value = phoneMatch[0];
-
-            const taxMatch = rawText.match(/\b\d{13}\b/);
-            if (taxMatch) {
-                document.getElementById('taxId').value = taxMatch[0];
-            } else {
-                const taxKeywordMatch = rawText.match(/(เลขประจำตัวผู้เสียภาษี|Tax ID)\s*[:\-\.]?\s*([\d\-\s]+)/i);
-                if (taxKeywordMatch) document.getElementById('taxId').value = taxKeywordMatch[2].trim();
+            // ถ้าหาบริษัทไม่เจอจริงๆ ให้เอาบรรทัดแรกที่ยาวๆ หน่อยเป็นชื่อบริษัท (Fallback)
+            if (!companyFound && lines.length > 0) {
+                 // แต่ต้องไม่ใช่คำว่า End User...
+                 const validLines = lines.filter(l => !l.toLowerCase().startsWith('end'));
+                 if (validLines.length > 0) document.getElementById('companyName').value = cleanLine(validLines[0]);
             }
 
-            let addressLines = [];
-            const addressKeywords = ['เลขที่', 'หมู่', 'ซอย', 'ถนน', 'แขวง', 'ต.', 'ตำบล', 'เขต', 'อ.', 'อำเภอ', 'จ.', 'จังหวัด', 'กทม', 'Bangkok', 'Road', 'Street'];
-            
-            lines.forEach((line, index) => {
-                if (index === 0) return; 
-                const hasKeyword = addressKeywords.some(kw => line.includes(kw));
-                const hasNumber = /\d/.test(line);
-                if (hasKeyword && hasNumber) addressLines.push(line.trim());
-            });
-
-            if (addressLines.length > 0) document.getElementById('address').value = addressLines.join(' ');
-        }
-
-        function resetFields() {
-            document.getElementById('companyName').value = '';
-            document.getElementById('address').value = '';
-            document.getElementById('taxId').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('email').value = '';
+            // รวมที่อยู่แล้วใส่ลงช่อง
+            if (addressParts.length > 0) {
+                document.getElementById('address').value = addressParts.join(' '); // เว้นวรรคต่อกัน
+            }
         }
 
         function saveToSheet() {
             if(GOOGLE_SCRIPT_URL.includes('วาง_URL') || GOOGLE_SCRIPT_URL === '') {
-                alert('⚠️ กรุณาใส่ URL ของ Google Apps Script ในโค้ดบรรทัดที่ 103 ก่อนครับ');
+                alert('⚠️ กรุณาใส่ URL ของ Google Apps Script ในโค้ดก่อนครับ');
                 return;
             }
 
@@ -150,7 +190,7 @@
             .then(() => {
                 btn.innerHTML = '✅ บันทึกสำเร็จ!';
                 btn.classList.replace('bg-green-600', 'bg-blue-600');
-                status.innerText = 'ข้อมูลถูกส่งไปที่ Google Sheet แล้ว';
+                status.innerText = 'บันทึกเรียบร้อย';
                 status.classList.remove('text-red-500');
                 status.classList.add('text-green-600');
                 
@@ -164,8 +204,8 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                btn.innerHTML = '❌ เกิดข้อผิดพลาด';
-                status.innerText = 'บันทึกไม่สำเร็จ';
+                btn.innerHTML = '❌ ผิดพลาด';
+                status.innerText = 'บันทึกไม่สำเร็จ เช็คเน็ต/URL';
                 status.classList.add('text-red-500');
                 btn.disabled = false;
             });
